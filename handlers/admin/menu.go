@@ -1,14 +1,15 @@
-package admin
+package adminHandlers
 
 import (
 	"context"
 	"log"
+	"strings"
 
 	"DeadLands/fsm"
+	clientFuncs "DeadLands/handlers/client"
 	"DeadLands/internal/db"
 	"DeadLands/internal/router"
-	"DeadLands/keyboards"
-	"DeadLands/utils"
+	keyboards "DeadLands/keyboards/admin"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,6 +18,7 @@ import (
 func RegisterMenu(r *router.Router) {
 	r.Add(
 		router.Route{Check: handleAdminMenuChecker, Action: handleAdminMenu},
+		router.Route{Check: handleAdminExitChecker, Action: handleAdminExit},
 	)
 }
 
@@ -30,20 +32,18 @@ func handleAdminMenuChecker(ctx context.Context, update *tgbotapi.Update, userSt
 }
 
 func handleAdminMenu(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update, f *fsm.FSM, pool *pgxpool.Pool) {
-	// add user
+	u := update.Message.From
+
+	// check admin
 	qtx := db.New(pool)
-	err := qtx.CreateUser(ctx, db.CreateUserParams{
-		UserID:   update.Message.From.ID,
-		Username: utils.ProcessRawUsername(update.Message.From.UserName),
-		Fullname: utils.GetFullname(update.Message.From.FirstName, update.Message.From.LastName),
-	})
+	_, err := qtx.IsAdminExists(ctx, u.ID)
 	if err != nil {
-		log.Println("create user:", err)
+		log.Printf("[id%d] is admin exists: %s", u.ID, err.Error())
 		return
 	}
 	//
 
-	msg_text := "<b>☢️ Ты находишься в главном меню</b>"
+	msg_text := "<b>🥷🏻 Вы находитесь в админ меню</b>"
 
 	messageConf := tgbotapi.NewMessage(update.Message.From.ID, msg_text)
 	messageConf.ParseMode = "html"
@@ -54,5 +54,18 @@ func handleAdminMenu(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi
 		log.Panic(err)
 	}
 
-	f.SetState(update.Message.From.ID, "MainMenu", "main")
+	f.SetState(update.Message.From.ID, "AdminMenu", "main")
+}
+
+// * exit command
+func handleAdminExitChecker(ctx context.Context, update *tgbotapi.Update, userState string) bool {
+	if strings.HasPrefix(userState, "AdminMenu.") && update.Message.Text == keyboards.BtnExit {
+		return true
+	}
+
+	return false
+}
+
+func handleAdminExit(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update, f *fsm.FSM, pool *pgxpool.Pool) {
+	clientFuncs.HandleStart(ctx, bot, update, f, pool)
 }

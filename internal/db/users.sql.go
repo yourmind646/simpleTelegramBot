@@ -32,7 +32,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 
 const getUser = `-- name: GetUser :one
 SELECT user_id, username, fullname, register_date FROM users
-WHERE user_id == $1
+WHERE user_id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
@@ -47,9 +47,20 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 	return i, err
 }
 
+const getUsersCount = `-- name: GetUsersCount :one
+SELECT COUNT(*) FROM users
+`
+
+func (q *Queries) GetUsersCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getUsersCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const isUserExists = `-- name: IsUserExists :one
 SELECT user_id FROM users
-WHERE user_id == $1
+WHERE user_id = $1
 `
 
 func (q *Queries) IsUserExists(ctx context.Context, userID int64) (int64, error) {

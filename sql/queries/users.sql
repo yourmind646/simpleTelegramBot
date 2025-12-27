@@ -1,6 +1,6 @@
 -- name: IsUserExists :one
 SELECT user_id FROM users
-WHERE user_id == $1;
+WHERE user_id = $1;
 
 -- name: CreateUser :exec
 INSERT INTO users (user_id, username, fullname, register_date)
@@ -11,4 +11,7 @@ SET username = EXCLUDED.username,
 
 -- name: GetUser :one
 SELECT * FROM users
-WHERE user_id == $1;
+WHERE user_id = $1;
+
+-- name: GetUsersCount :one
+SELECT COUNT(*) FROM users;

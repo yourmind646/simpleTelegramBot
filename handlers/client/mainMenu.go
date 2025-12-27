@@ -1,10 +1,10 @@
-package client
+package clientHandlers
 
 import (
 	"DeadLands/fsm"
 	"DeadLands/internal/db"
 	"DeadLands/internal/router"
-	"DeadLands/keyboards"
+	keyboards "DeadLands/keyboards/client"
 	"DeadLands/utils"
 	"context"
 	"log"
@@ -15,7 +15,7 @@ import (
 
 func RegisterMenu(r *router.Router) {
 	r.Add(
-		router.Route{Check: handleStartChecker, Action: handleStart},
+		router.Route{Check: handleStartChecker, Action: HandleStart},
 	)
 }
 
@@ -28,7 +28,7 @@ func handleStartChecker(ctx context.Context, update *tgbotapi.Update, userState 
 	return true
 }
 
-func handleStart(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update, f *fsm.FSM, pool *pgxpool.Pool) {
+func HandleStart(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update, f *fsm.FSM, pool *pgxpool.Pool) {
 	// add user
 	qtx := db.New(pool)
 	err := qtx.CreateUser(ctx, db.CreateUserParams{
@@ -42,7 +42,7 @@ func handleStart(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Upd
 	}
 	//
 
-	msg_text := "<b>☢️ Ты находишься в главном меню</b>"
+	msg_text := "<b>☢️ Вы находитесь в главном меню</b>"
 
 	messageConf := tgbotapi.NewMessage(update.Message.From.ID, msg_text)
 	messageConf.ParseMode = "html"

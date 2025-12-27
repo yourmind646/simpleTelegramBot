@@ -2,18 +2,22 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jackc/pgx/v5"
 	pgxpool "github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 
 	"DeadLands/fsm"
-	"DeadLands/handlers/admin"
-	"DeadLands/handlers/client"
+	adminHandlers "DeadLands/handlers/admin"
+	clientHandlers "DeadLands/handlers/client"
+	"DeadLands/internal/db"
 	"DeadLands/internal/router"
 )
 
@@ -48,6 +52,27 @@ func initDatabaseSchema(ctx context.Context, pool *pgxpool.Pool) {
 		}
 	}
 
+	// добавить базового админа
+	qtx := db.New(tx)
+	base_admin_id, err := strconv.ParseInt(os.Getenv("BASE_ADMIN"), 10, 64)
+
+	if err == nil {
+		_, err = qtx.IsAdminExists(ctx, base_admin_id)
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = qtx.CreateAdmin(ctx, base_admin_id)
+
+			if err != nil {
+				log.Println("Ошибка создания базового админа:", err.Error())
+			}
+		} else if err == nil {
+			log.Println("Базовый админ уже создан.")
+		} else {
+			log.Println("Не удалось создать базового админа:", err.Error())
+		}
+	} else {
+		log.Println("Ошибка парсинга BaseAdmin из env!")
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		log.Panic(err)
 	}
@@ -56,6 +81,11 @@ func initDatabaseSchema(ctx context.Context, pool *pgxpool.Pool) {
 }
 
 func main() {
+	// грузит .env из текущей рабочей директории
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env not loaded:", err)
+	}
+
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	if err != nil {
 		log.Panic(err)
@@ -94,8 +124,10 @@ func main() {
 	initDatabaseSchema(ctx, pool) // initialize db schema
 
 	r := router.New()
-	admin.RegisterMenu(r)
-	client.RegisterMenu(r)
+	adminHandlers.RegisterMenu(r)
+	adminHandlers.RegisterStat(r)
+
+	clientHandlers.RegisterMenu(r)
 
 	for update := range updates {
 		go r.RouteUpdate(ctx, bot, &update, f, pool)
