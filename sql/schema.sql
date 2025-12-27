@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGINT PRIMARY KEY NOT NULL,
+    username VARCHAR(33) NULL,
+    fullname VARCHAR(129) NULL,
+    register_date TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+    user_id BIGINT PRIMARY KEY NOT NULL REFERENCES users(user_id) ON DELETE CASCADE
+);
