@@ -2,6 +2,8 @@ package utils
 
 import "github.com/jackc/pgx/v5/pgtype"
 
+var AvailableFileKeys []string = []string{"profilePhoto", "inventoryPhoto"}
+
 func ProcessRawUsername(rawUsername string) pgtype.Text {
 	if rawUsername == "" {
 		return pgtype.Text{Valid: false}
@@ -20,4 +22,13 @@ func GetFullname(firstName string, lastName string) pgtype.Text {
 	} else {
 		return pgtype.Text{String: "", Valid: true}
 	}
+}
+
+func IsFileKeyExists(fileKey string) bool {
+	for _, afileKey := range AvailableFileKeys {
+		if afileKey == fileKey {
+			return true
+		}
+	}
+	return false
 }

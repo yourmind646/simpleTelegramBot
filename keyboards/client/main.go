@@ -1,30 +1,70 @@
 package clientKeyboards
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+import (
+	"github.com/mymmrac/telego"
+	tu "github.com/mymmrac/telego/telegoutil"
+)
 
-func GetMainKB() tgbotapi.ReplyKeyboardMarkup {
-	kb := tgbotapi.NewReplyKeyboard(
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🗺 Вылазки"),
+func GetMainKB() *telego.ReplyKeyboardMarkup {
+	kb := tu.Keyboard(
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "🗺 Вылазки"},
 		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("👤 Персонаж"),
-			tgbotapi.NewKeyboardButton("🎒 Инвентарь"),
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "👤 Персонаж"},
+			telego.KeyboardButton{Text: "🎒 Инвентарь"},
 		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🏚 База"),
-			tgbotapi.NewKeyboardButton("🛠 Крафт"),
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "🏚 База"},
+			telego.KeyboardButton{Text: "🛠 Крафт"},
 		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🎁 Бонусы"),
-			tgbotapi.NewKeyboardButton("🧳 Торговец"),
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "🎁 Бонусы"},
+			telego.KeyboardButton{Text: "🧳 Торговец"},
 		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("🏆 Топ"),
-			tgbotapi.NewKeyboardButton("⚙️ Настройки"),
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "🏆 Топ"},
+			telego.KeyboardButton{Text: "⚙️ Настройки"},
 		),
-		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("❓ Помощь"),
+		tu.KeyboardRow(
+			telego.KeyboardButton{Text: "❓ Помощь"},
+		),
+	).WithResizeKeyboard().WithInputFieldPlaceholder("Выберите действие...")
+
+	return kb
+}
+
+func GetInventoryIkb() *telego.InlineKeyboardMarkup {
+	kb := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🍖 Еда",
+				CallbackData: "inv:category:food",
+			},
+			telego.InlineKeyboardButton{
+				Text:         "💧 Питье",
+				CallbackData: "inv:category:liquid",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "💊 Медицина",
+				CallbackData: "inv:category:medicine",
+			},
+			telego.InlineKeyboardButton{
+				Text:         "🧰 Материалы",
+				CallbackData: "inv:category:materials",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🏹 Оружие",
+				CallbackData: "inv:category:weapon",
+			},
+			telego.InlineKeyboardButton{
+				Text:         "🛡 Броня",
+				CallbackData: "inv:category:armor",
+			},
 		),
 	)
 

@@ -10,8 +10,8 @@ import (
 	"DeadLands/internal/router"
 	keyboards "DeadLands/keyboards/admin"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/mymmrac/telego"
 )
 
 func RegisterStat(r *router.Router) {
@@ -21,7 +21,11 @@ func RegisterStat(r *router.Router) {
 }
 
 // * admin command
-func handleAdminStatChecker(ctx context.Context, update *tgbotapi.Update, userState string) bool {
+func handleAdminStatChecker(ctx context.Context, update *telego.Update, userState string) bool {
+	if update.Message == nil { // Message only
+		return false
+	}
+
 	if userState == "AdminMenu.main" && update.Message.Text == keyboards.BtnStat {
 		return true
 	}
@@ -29,7 +33,7 @@ func handleAdminStatChecker(ctx context.Context, update *tgbotapi.Update, userSt
 	return false
 }
 
-func handleAdminStat(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update, f *fsm.FSM, pool *pgxpool.Pool) {
+func handleAdminStat(ctx context.Context, bot *telego.Bot, update *telego.Update, f *fsm.FSM, pool *pgxpool.Pool) {
 	u := update.Message.From
 
 	// get users count
@@ -46,11 +50,11 @@ func handleAdminStat(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi
 Количество пользователей: %d`
 	msg_text = fmt.Sprintf(msg_text, usersCount)
 
-	messageConf := tgbotapi.NewMessage(update.Message.From.ID, msg_text)
-	messageConf.ParseMode = "html"
-	messageConf.ReplyMarkup = keyboards.GetMainKB()
-
-	_, err = bot.Send(messageConf)
+	_, err = bot.SendMessage(ctx, &telego.SendMessageParams{
+		ChatID:    update.Message.Chat.ChatID(),
+		Text:      msg_text,
+		ParseMode: "html",
+	})
 	if err != nil {
 		log.Println("Ошибка отправки сообщения:", err.Error())
 		return

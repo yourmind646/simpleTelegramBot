@@ -5,11 +5,150 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type FileTypeEnum string
+
+const (
+	FileTypeEnumPhoto     FileTypeEnum = "photo"
+	FileTypeEnumDocument  FileTypeEnum = "document"
+	FileTypeEnumVideo     FileTypeEnum = "video"
+	FileTypeEnumAudio     FileTypeEnum = "audio"
+	FileTypeEnumVoice     FileTypeEnum = "voice"
+	FileTypeEnumSticker   FileTypeEnum = "sticker"
+	FileTypeEnumAnimation FileTypeEnum = "animation"
+	FileTypeEnumUndefined FileTypeEnum = "undefined"
+)
+
+func (e *FileTypeEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FileTypeEnum(s)
+	case string:
+		*e = FileTypeEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FileTypeEnum: %T", src)
+	}
+	return nil
+}
+
+type NullFileTypeEnum struct {
+	FileTypeEnum FileTypeEnum
+	Valid        bool // Valid is true if FileTypeEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFileTypeEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.FileTypeEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FileTypeEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFileTypeEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FileTypeEnum), nil
+}
+
+type ItemCategoryEnum string
+
+const (
+	ItemCategoryEnumFood      ItemCategoryEnum = "food"
+	ItemCategoryEnumLiquid    ItemCategoryEnum = "liquid"
+	ItemCategoryEnumMedicine  ItemCategoryEnum = "medicine"
+	ItemCategoryEnumMaterials ItemCategoryEnum = "materials"
+	ItemCategoryEnumWeapon    ItemCategoryEnum = "weapon"
+	ItemCategoryEnumArmor     ItemCategoryEnum = "armor"
+)
+
+func (e *ItemCategoryEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ItemCategoryEnum(s)
+	case string:
+		*e = ItemCategoryEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ItemCategoryEnum: %T", src)
+	}
+	return nil
+}
+
+type NullItemCategoryEnum struct {
+	ItemCategoryEnum ItemCategoryEnum
+	Valid            bool // Valid is true if ItemCategoryEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullItemCategoryEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.ItemCategoryEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ItemCategoryEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullItemCategoryEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ItemCategoryEnum), nil
+}
+
 type Admin struct {
 	UserID int64
+}
+
+type File struct {
+	FileID     string
+	FileKey    string
+	FileType   FileTypeEnum
+	UploadedBy int64
+	UploadedAt pgtype.Timestamptz
+}
+
+type Hero struct {
+	HeroID    pgtype.UUID
+	UserID    int64
+	Hp        int32
+	Energy    int32
+	Hunger    int32
+	Thirst    int32
+	Radiation int32
+}
+
+type InventoryItem struct {
+	UserID         int64
+	ItemInstanceID int64
+	Qty            int32
+	Location       string
+}
+
+type ItemDef struct {
+	ItemDefID   int64
+	Code        string
+	Name        string
+	Category    ItemCategoryEnum
+	Stackable   bool
+	BaseProps   []byte
+	IconFileKey pgtype.Text
+}
+
+type ItemInstance struct {
+	ItemInstanceID int64
+	ItemDefID      int64
+	Props          []byte
+	CreatedAt      pgtype.Timestamptz
 }
 
 type User struct {
