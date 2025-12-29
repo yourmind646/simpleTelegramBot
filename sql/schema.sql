@@ -21,8 +21,8 @@ CREATE TYPE file_type_enum AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS files (
-  file_id     TEXT PRIMARY KEY,
-  file_key    VARCHAR(50) NOT NULL UNIQUE,
+  file_id     TEXT UNIQUE,
+  file_key    VARCHAR(50) NOT NULL PRIMARY KEY,
   file_type   file_type_enum NOT NULL,
   uploaded_by BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   uploaded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()

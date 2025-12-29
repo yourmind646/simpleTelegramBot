@@ -1,8 +1,18 @@
 package utils
 
-import "github.com/jackc/pgx/v5/pgtype"
+import (
+	"fmt"
+	"html"
 
-var AvailableFileKeys []string = []string{"profilePhoto", "inventoryPhoto"}
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+var AvailableFileKeys []string = []string{
+	// UI
+	"profilePhoto", "inventoryPhoto", "sortiePhoto",
+	// locations
+	"locYardsPhoto", "locSupermarketPhoto", "locMetroPhoto", "locArmyBasePhoto",
+}
 
 func ProcessRawUsername(rawUsername string) pgtype.Text {
 	if rawUsername == "" {
@@ -13,15 +23,19 @@ func ProcessRawUsername(rawUsername string) pgtype.Text {
 }
 
 func GetFullname(firstName string, lastName string) pgtype.Text {
+	var fullName string
+
 	if firstName != "" && lastName != "" {
-		return pgtype.Text{String: firstName + " " + lastName, Valid: true}
+		fullName = html.EscapeString(firstName + " " + lastName)
 	} else if firstName != "" {
-		return pgtype.Text{String: firstName, Valid: true}
+		fullName = html.EscapeString(firstName)
 	} else if lastName != "" {
-		return pgtype.Text{String: lastName, Valid: true}
+		fullName = html.EscapeString(lastName)
 	} else {
-		return pgtype.Text{String: "", Valid: true}
+		fullName = ""
 	}
+
+	return pgtype.Text{String: fullName, Valid: true}
 }
 
 func IsFileKeyExists(fileKey string) bool {
@@ -31,4 +45,30 @@ func IsFileKeyExists(fileKey string) bool {
 		}
 	}
 	return false
+}
+
+func FormatSecondsToString(seconds int) string {
+	minutes := 0
+	hours := 0
+
+	if seconds/3600 > 0 {
+		hours += seconds / 3600
+		seconds -= hours * 3600
+	}
+	if seconds/60 > 0 {
+		minutes += seconds / 60
+		seconds -= minutes * 60
+	}
+
+	return fmt.Sprintf("%dч %dм %dс", hours, minutes, seconds)
+}
+
+func FormatDropList(drops map[string]map[string]int) string {
+	result := ""
+
+	for itemKey, dropOpts := range drops {
+		result += fmt.Sprintf("• %s (до %d шт.) - %d%%\n", itemKey, dropOpts["maxN"], dropOpts["pct"])
+	}
+
+	return result
 }

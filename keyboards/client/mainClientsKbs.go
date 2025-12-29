@@ -70,3 +70,53 @@ func GetInventoryIkb() *telego.InlineKeyboardMarkup {
 
 	return kb
 }
+
+func GetLocationsIkb() *telego.InlineKeyboardMarkup {
+	kb := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🏘 Дворы",
+				CallbackData: "sortie:loc:yards",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🏪 Супермаркет",
+				CallbackData: "sortie:loc:supermarket",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🚇 Метро",
+				CallbackData: "sortie:loc:metro",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "🪖 Военная часть",
+				CallbackData: "sortie:loc:armyBase",
+			},
+		),
+	)
+
+	return kb
+}
+
+func GetLocationPreviewIkb() *telego.InlineKeyboardMarkup {
+	kb := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "⚡️ Начать вылазку",
+				CallbackData: "sortie:runRaid",
+			},
+		),
+		tu.InlineKeyboardRow(
+			telego.InlineKeyboardButton{
+				Text:         "↩️ Назад",
+				CallbackData: "sortie:back",
+			},
+		),
+	)
+
+	return kb
+}

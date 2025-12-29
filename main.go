@@ -183,6 +183,7 @@ func main() {
 	clientHandlers.RegisterMenu(r)
 	clientHandlers.RegisterCharacter(r)
 	clientHandlers.RegisterInventory(r)
+	clientHandlers.RegisterSortie(r)
 
 	for update := range updates {
 		go r.RouteUpdate(ctx, bot, &update, f, pool)

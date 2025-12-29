@@ -5,8 +5,6 @@ import (
 	"DeadLands/internal/db"
 	"DeadLands/internal/router"
 	"context"
-	"fmt"
-	"html"
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -37,41 +35,20 @@ func handleInventoryMainChecker(ctx context.Context, update *telego.Update, user
 func handleInventoryMain(ctx context.Context, bot *telego.Bot, update *telego.Update, f *fsm.FSM, pool *pgxpool.Pool) {
 
 	qtx := db.New(pool)
-	hero, err := qtx.GetHeroByUser(ctx, update.Message.From.ID)
-	if err != nil {
-		log.Println("Ошибка GetHeroByUser:", err.Error())
-		return
-	}
-	user, err := qtx.GetUser(ctx, update.Message.From.ID)
-	if err != nil {
-		log.Println("Ошибка GetUser:", err.Error())
-		return
-	}
-	heroPhotoFile, err := qtx.GetFileByKey(ctx, "profilePhoto")
+	inventoryPhotoFile, err := qtx.GetFileByKey(ctx, "inventoryPhoto")
 	if err != nil {
 		log.Println("Ошибка GetFileByKey:", err.Error())
 		return
 	}
 
-	msg_text := fmt.Sprintf(
-		`<b>👤 Персонаж «%s»</b>
-
-Состояние:
-❤️ Здоровье: %d
-⚡️ Энергия: %d
-🍖 Голод: %d
-💧 Жажда: %d
-☢️ Радиация: %d`,
-		html.EscapeString(user.Fullname.String),
-		hero.Hp, hero.Energy, hero.Hunger, hero.Thirst, hero.Radiation,
-	)
+	msg_text := "<b>🎒 Выберите категорию предметов:</b>"
 
 	_, messageErr := bot.SendPhoto(ctx, &telego.SendPhotoParams{
 		ChatID:      update.Message.Chat.ChatID(),
-		Photo:       telego.InputFile{FileID: heroPhotoFile.FileID},
+		Photo:       telego.InputFile{FileID: inventoryPhotoFile.FileID},
 		Caption:     msg_text,
 		ParseMode:   "html",
-		ReplyMarkup: keyboards.GetMainKB(),
+		ReplyMarkup: keyboards.GetInventoryIkb(),
 	})
 	if messageErr != nil {
 		log.Println("Ошибка отправки сообщения '👤 Персонаж':", messageErr.Error())
